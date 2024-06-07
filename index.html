@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>静态应用</title>
+</head>
+<body>
+    <!-- npx http-server --port 30000 --cors -->
+    <div id="static"></div>
+    <script>
+        function render(value) {
+            const app = document.getElementById("static");
+            if (app) {
+                app.innerHTML = value;
+            }
+        }
+
+        if (!window.__POWERED_BY_QIANKUN__) {
+            render("<h1>static2</h1>");
+        }
+
+        window["@levi/static"] = {
+            bootstrap: async () => {
+                console.log("static bootstrap");
+            },
+            mount: async (props) => {
+                render(`<div>${props.text||'<h1>static1</h1>'}</div>`);
+            },
+            unmount: async () => {
+                render("");
+            }
+        }
+    </script>
+</body>
+</html>
