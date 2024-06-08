@@ -73,6 +73,9 @@
         sandbox.inactive();
         console.log(window.a, window.b);
 
+        // 3.1 失活后从代理对象上也获取不到值
+        console.log(sandbox.proxy.a, sandbox.proxy.b);
+
         // 4. 重新激活
         sandbox.active();
         console.log(window.a, window.b);
