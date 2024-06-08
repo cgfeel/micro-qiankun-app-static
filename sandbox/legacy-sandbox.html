@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div></div>
+    <script>
+        class LegacySandbox {
+            constructor() {
+                // 1. 修改的内容；2. 新增的内容；3. 不管修改还是新增的内容
+                this.modifyPropsMap = new Map();
+                this.addedPropsMap = new Map();
+                this.currentPropsMap = new Map();
+
+                // 创建一个空对象做劫持
+                const fakeWindow = Object.create(null);
+                const proxy = new Proxy(fakeWindow, {
+                    get: (target, key, recevier) => {
+                        return window[key];
+                    },
+                    set: (target, key, value) => {
+                        if (!window.hasOwnProperty(key)) {
+                            // 记录添加的值
+                            this.addedPropsMap.set(key, value);
+                        } else if (!this.modifyPropsMap.has(key)) {
+                            // 如果 window 对象存在 key，且 modifyPropsMap 不存在，保存 window 原始值
+                            this.modifyPropsMap.set(key, window[key]);
+                        }
+
+                        // 修改最新的内容，所有修改的内容都记录一个副本
+                        this.currentPropsMap.set(key, value);
+                        window[key] = value;
+                    }
+                });
+
+                this.proxy = proxy;
+            }
+            active() {
+                // 激活将所有记录的值附加到 window
+                this.currentPropsMap.forEach((value, key) => this._setWindowProp(key, value));
+            }
+            inactive() {
+                // 计算修改的值，将其还原
+                this.modifyPropsMap.forEach((value, key) => this._setWindowProp(key, value));
+
+                // 计算添加的值，将其删除
+                this.addedPropsMap.forEach((_, key) => this._setWindowProp(key, undefined));
+            }
+            _setWindowProp(key, val) {
+                if (val === void 0) {
+                    delete window[key];
+                } else {
+                    window[key] = val;
+                }
+            }
+        }
+
+        // test:
+        // 1. 创建一个沙箱并激活快照
+        const sandbox = new LegacySandbox;
+        sandbox.active();
+
+        // 2. 修改值
+        sandbox.proxy.a = 100;
+        sandbox.proxy.b = 200;
+
+        console.log(window.a, window.b);
+
+        // 3. 失活沙箱
+        sandbox.inactive();
+        console.log(window.a, window.b);
+
+        // 4. 重新激活
+        sandbox.active();
+        console.log(window.a, window.b);
+    </script>
+</body>
+</html>
