@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div>打开调试窗口查看演示</div>
+    <script>
+        // 沙箱：防止应用加载的时候污染 window
+
+        // 加载 a 应用更改 window 属性，卸载删除
+        // 加载 b 应用更改 window 属性
+
+        // 快照模式：先保存 a 应用的属性，失活的时候把修改的属性存起来，激活的时候还原回来
+        // 缺点：浪费内存，要给 window 拍照
+
+        class SnapshotSandbox {
+            constructor() {
+                // 存全局修改的属性
+                this.modifyPropsMap = {};
+            }
+            active() {
+                // 1. 激活前将 window 现有的属性和值存入快照
+                this.windowSnapShot = {};
+                Object.entries(window).forEach(([key, val]) => {
+                    this.windowSnapShot[key] = val;
+                });
+
+                // 2. 将失活前记录修改的值还原给 window
+                Object.entries(this.modifyPropsMap).forEach(([key, val]) => {
+                    window[key] = val;
+                });
+            }
+            inactive() {
+                // 3. 失活后存储变更的属性，并还原 window
+                this.modifyPropsMap = {};
+                Object.entries(window).forEach(([key, val]) => {
+                    if (val !== this.windowSnapShot[key]) {
+                        this.modifyPropsMap[key] = val;
+                        window[key] = this.windowSnapShot[key];
+                    }
+                });
+            }
+        }
+
+        // test:
+        // 1. 创建一个沙箱并激活快照
+        const sandbox = new SnapshotSandbox;
+        sandbox.active();
+
+        // 2. 修改值
+        window.a = 100;
+        window.b = 200;
+
+        console.log(window.a, window.b);
+
+        // 3. 失活沙箱
+        sandbox.inactive();
+        console.log(window.a, window.b);
+
+        // 4. 重新激活
+        sandbox.active();
+        console.log(window.a, window.b);
+    </script>
+</body>
+</html>
