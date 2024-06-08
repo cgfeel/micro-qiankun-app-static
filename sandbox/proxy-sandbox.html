@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div>打开调试窗口查看演示</div>
+    <script>
+        class ProxySandbox {
+            constructor() {
+                const fakeWindow = Object.create(null);
+
+                this.running = false;
+                this.proxy = new Proxy(fakeWindow, {
+                    get: (target, key) => {
+                        if (this.running) {
+                            // 先去从 proxy 上面获取值，如果属性不存在再去 window 上取
+                            return key in target ? target[key] : window[key];
+                        }
+                        return window[key];
+                    },
+                    set: (target, key, value) => {
+                        // 只有激活的时候才能执行
+                        if (this.running) {
+                            // 修改不再操作 window，全部存在 proxy 上
+                            target[key] = value;
+                        }
+                    }
+                });
+            }
+            active() {
+                if (!this.running) this.running = true;
+            }
+            inactive() {
+                this.running = false;
+            }
+        }
+
+        // 声明 2 个沙箱并激活
+        const sandbox1 = new ProxySandbox;
+        const sandbox2 = new ProxySandbox;
+
+        sandbox1.active();
+        sandbox2.active();
+
+        // 修改值只会影响沙箱里的值，不会修改 window
+        sandbox1.proxy.a = 100;
+        sandbox2.proxy.b = 200;
+        console.log('proxy active', sandbox1.proxy.a, sandbox2.proxy.b);
+        console.log('window data', window.a, window.b);
+
+        // 失活后修改值无效
+        sandbox1.inactive();
+        sandbox2.inactive();
+
+        sandbox1.proxy.a = 300;
+        sandbox2.proxy.b = 400;
+        console.log('proxy inactive', sandbox1.proxy.a, sandbox2.proxy.b);
+
+        // 重新激活后得到最初赋值
+        sandbox1.active();
+        sandbox2.active();
+        console.log('proxy reactive', sandbox1.proxy.a, sandbox2.proxy.b);
+
+        // 模拟两个子应用
+        (function(window) {
+            console.log('child a', window.a);
+        })(sandbox1.proxy);
+
+        (function(window) {
+            console.log('child b', window.b);
+        })(sandbox2.proxy);
+    </script>
+</body>
+</html>

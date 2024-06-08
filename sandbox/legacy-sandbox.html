@@ -6,7 +6,7 @@
     <title>Document</title>
 </head>
 <body>
-    <div></div>
+    <div>打开调试窗口查看演示</div>
     <script>
         class LegacySandbox {
             constructor() {
@@ -18,7 +18,7 @@
                 // 创建一个空对象做劫持
                 const fakeWindow = Object.create(null);
                 const proxy = new Proxy(fakeWindow, {
-                    get: (target, key, recevier) => {
+                    get: (target, key) => {
                         return window[key];
                     },
                     set: (target, key, value) => {
@@ -79,6 +79,11 @@
         // 4. 重新激活
         sandbox.active();
         console.log(window.a, window.b);
+
+        // 模拟传递给子应用一个 window
+        (function(window) {
+            console.log('child app', window.a, window.b);
+        })(sandbox.proxy);
     </script>
 </body>
 </html>
