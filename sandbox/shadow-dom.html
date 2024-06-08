@@ -26,10 +26,10 @@
         const shadow = appElement.attachShadow({ mode: "closed" });
         shadow.innerHTML = oldContent;
 
-        // 4) 最后将 Dom 内容清空，这样就只剩下 Shadow DOM
+        // 4) 将 Dom 内容清空，这样 appElement 就只剩下 Shadow DOM
         appElement.innerHTML = "";
 
-        // 5) 将这个只带有沙箱的 Dom 添加到 body 下
+        // 5) 将只带有沙箱的 Dom 的 appElement 添加到 body 下
         document.body.appendChild(appElement);
     </script>
 </body>
