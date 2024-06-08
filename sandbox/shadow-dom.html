@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div id="outer">abc</div>
+    <script>
+        // 影子 dom
+        // 1) 创建一个模板
+        const template = `<div id="qiankun-xxx">
+            <div id="inner">bcd</div>
+            <style>div { color: #f00; }</style>
+        </div>`;
+
+        const container = document.createElement("div");
+        container.innerHTML = template;
+
+        // 2) 将模板变成 Dom 元素
+        const appElement = container.firstChild;
+        const oldContent = appElement.innerHTML;
+
+        // 3) 初始化了一个关联到 appElement 的 Shadow DOM 树，并将 Dom 内容赋值给 Shadow DOM 树内
+        const shadow = appElement.attachShadow({ mode: "closed" });
+        shadow.innerHTML = oldContent;
+
+        // 4) 最后将 Dom 内容清空，这样就只剩下 Shadow DOM
+        appElement.innerHTML = "";
+
+        // 5) 将这个只带有沙箱的 Dom 添加到 body 下
+        document.body.appendChild(appElement);
+    </script>
+</body>
+</html>
