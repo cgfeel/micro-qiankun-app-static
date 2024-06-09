@@ -17,7 +17,12 @@
         }
 
         if (!window.__POWERED_BY_QIANKUN__) {
-            render("<h1>static2</h1>");
+            render(`<ol>
+                <li><a href="/sandbox/shadow-dom.html">ShadowDom</a></li>
+                <li><a href="/sandbox/sandbox.html">window 快照实现沙箱</a></li>
+                <li><a href="/sandbox/legacy-sandbox.html">通过 proxy 代理单例应用</a></li>
+                <li><a href="/sandbox/proxy-sandbox.html">通过 proxy 代理多例应用</a></li>
+            </ol>`);
         }
 
         window["@levi/static"] = {
